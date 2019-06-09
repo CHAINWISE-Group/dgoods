@@ -377,6 +377,7 @@ void dgoods::mint(name to,
             dg.owner = to;
             dg.category = category;
             dg.token_name = token_name;
+            dg.relative_uri = token_name.to_string() + "-" +  to_string(issued_supply + 1) + ".json";
         });
     } else {
         dgood_table.emplace( issuer, [&]( auto& dg ) {
