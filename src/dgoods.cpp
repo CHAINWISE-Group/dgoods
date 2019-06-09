@@ -105,6 +105,8 @@ ACTION dgoods::issue(name to,
          mint(to, dgood_stats.issuer, category, token_name,
              dgood_stats.issued_supply, relative_uri);
         add_balance(to, dgood_stats.issuer, category, token_name, dgood_stats.category_name_id, q);
+
+        SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { dgood_stats.issuer, dgood_id } );
     } else {
         // issue fungible
         q.from_string(quantity);
@@ -351,6 +353,12 @@ ACTION dgoods::logcall(uint64_t dgood_id) {
     require_auth( get_self() );
 }
 
+// method to notify issuer of the new nft id
+ACTION dgoods::logissuenft(name issuer,
+                           uint64_t dgood_id) {
+    require_auth( get_self() );
+    require_recipient( issuer );
+}
 
 // Private
 void dgoods::mint(name to,

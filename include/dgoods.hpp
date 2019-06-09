@@ -73,6 +73,9 @@ CONTRACT dgoods: public contract {
 
         ACTION logcall(uint64_t dgood_id);
 
+        ACTION logissuenft(name issuer,
+                           uint64_t dgood_id);
+
         // now() gets current time in sec
         // uint32_t 604800 is 1 week in seconds
         TABLE asks {
