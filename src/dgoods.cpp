@@ -215,6 +215,9 @@ ACTION dgoods::transfernft(name from,
         // notifiy both parties
         require_recipient( from );
         require_recipient( to );
+
+        require_recipient( dgood_stats.issuer );
+
         dgood_table.modify( token, same_payer, [&] (auto& t ) {
             t.owner = to;
         });
