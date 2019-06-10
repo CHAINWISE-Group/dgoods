@@ -106,7 +106,6 @@ ACTION dgoods::issue(name to,
              dgood_stats.issued_supply, relative_uri);
         add_balance(to, dgood_stats.issuer, category, token_name, dgood_stats.category_name_id, q);
 
-        SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { dgood_stats.issuer, dgood_id } );
     } else {
         // issue fungible
         q.from_string(quantity);
@@ -393,7 +392,7 @@ void dgoods::mint(name to,
         });
     }
     SEND_INLINE_ACTION( *this, logcall, { { get_self(), "active"_n } }, { dgood_id } );
-
+    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id } );
 }
 
 // Private
