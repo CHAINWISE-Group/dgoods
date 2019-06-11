@@ -74,7 +74,8 @@ CONTRACT dgoods: public contract {
         ACTION logcall(uint64_t dgood_id);
 
         ACTION logissuenft(name issuer,
-                           uint64_t dgood_id);
+                           uint64_t dgood_id,
+                           string memo);
 
         // now() gets current time in sec
         // uint32_t 604800 is 1 week in seconds
@@ -161,7 +162,7 @@ CONTRACT dgoods: public contract {
       private:
 
         void mint(name to, name issuer, name category, name token_name,
-                  uint64_t issued_supply, string relative_uri);
+                  uint64_t issued_supply, string relative_uri, string memo);
         void add_balance(name owner, name issuer, name category, name token_name,
                          uint64_t category_name_id, dasset quantity);
         void sub_balance(name owner, uint64_t category_name_id, dasset quantity);

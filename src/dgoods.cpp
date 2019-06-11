@@ -103,7 +103,7 @@ ACTION dgoods::issue(name to,
         check( q.amount <= (dgood_stats.max_supply.amount - dgood_stats.current_supply), "Cannot issue more than max supply" );
 
          mint(to, dgood_stats.issuer, category, token_name,
-             dgood_stats.issued_supply, relative_uri);
+             dgood_stats.issued_supply, relative_uri, memo);
         add_balance(to, dgood_stats.issuer, category, token_name, dgood_stats.category_name_id, q);
 
     } else {
@@ -357,7 +357,8 @@ ACTION dgoods::logcall(uint64_t dgood_id) {
 
 // method to notify issuer of the new nft id
 ACTION dgoods::logissuenft(name issuer,
-                           uint64_t dgood_id) {
+                           uint64_t dgood_id,
+                           string memo) {
     require_auth( get_self() );
     require_recipient( issuer );
 }
@@ -368,7 +369,8 @@ void dgoods::mint(name to,
                   name category,
                   name token_name,
                   uint64_t issued_supply,
-                  string relative_uri) {
+                  string relative_uri,
+                  string memo) {
 
     dgood_index dgood_table( get_self(), get_self().value);
     auto dgood_id = dgood_table.available_primary_key();
@@ -392,7 +394,7 @@ void dgoods::mint(name to,
         });
     }
     SEND_INLINE_ACTION( *this, logcall, { { get_self(), "active"_n } }, { dgood_id } );
-    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id } );
+    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id, memo } );
 }
 
 // Private
@@ -436,7 +438,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall) )
+                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
             }
         }
 
