@@ -109,11 +109,11 @@ ACTION dgoods::create(const name& issuer,
     asset issued_supply = asset( 0, symbol( config_singleton.symbol, max_supply.symbol.precision() ));
 
 
-    stats2_index stats2_table( get_self(), category.value );
-    auto existing_token = stats2_table.find( token_name.value );
-    check( existing_token == stats2_table.end(), "Token with category and token_name exists" );
+    stats2_index stats_table( get_self(), category.value );
+    auto existing_token = stats_table.find( token_name.value );
+    check( existing_token == stats_table.end(), "Token with category and token_name exists" );
     // token type hasn't been created, create it
-    stats2_table.emplace( get_self(), [&]( auto& stats ) {
+    stats_table.emplace( get_self(), [&]( auto& stats ) {
         stats.category_name_id = category_name_id;
         stats.issuer = issuer;
         stats.rev_partner= rev_partner;
@@ -146,8 +146,8 @@ ACTION dgoods::issue(const name& to,
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     // dgoodstats table
-    stats2_index stats2_table( get_self(), category.value );
-    const auto& dgood_stats = stats2_table.get( token_name.value,
+    stats2_index stats_table( get_self(), category.value );
+    const auto& dgood_stats = stats_table.get( token_name.value,
                                                "Token with category and token_name does not exist" );
 
     // ensure have issuer authorization and valid quantity
@@ -173,7 +173,7 @@ ACTION dgoods::issue(const name& to,
     _add_balance(to, get_self(), category, token_name, dgood_stats.category_name_id, quantity);
 
     // increase current supply
-    stats2_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
+    stats_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
         s.current_supply += quantity;
         s.issued_supply += quantity;
     });
@@ -191,8 +191,8 @@ ACTION dgoods::burnnft(const name& owner,
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
         check( token.owner == owner, "must be token owner" );
 
-        stats2_index stats2_table( get_self(), token.category.value );
-        const auto& dgood_stats = stats2_table.get( token.token_name.value, "dgood stats not found" );
+        stats2_index stats_table( get_self(), token.category.value );
+        const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         check( dgood_stats.burnable == true, "Not burnable");
         check( dgood_stats.fungible == false, "Cannot call burnnft on fungible token, call burnft instead");
@@ -202,7 +202,7 @@ ACTION dgoods::burnnft(const name& owner,
 
         asset quantity(1, dgood_stats.max_supply.symbol);
         // decrease current supply
-        stats2_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
+        stats_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
             s.current_supply -= quantity;
         });
 
@@ -223,8 +223,8 @@ ACTION dgoods::burnft(const name& owner,
     account_index from_account( get_self(), owner.value );
     const auto& acct = from_account.get( category_name_id, "token does not exist in account" );
 
-    stats2_index stats2_table( get_self(), acct.category.value );
-    const auto& dgood_stats = stats2_table.get( acct.token_name.value, "dgood stats not found" );
+    stats2_index stats_table( get_self(), acct.category.value );
+    const auto& dgood_stats = stats_table.get( acct.token_name.value, "dgood stats not found" );
 
     _checkasset( quantity, true );
     string string_precision = "precision of quantity must be " + to_string( dgood_stats.max_supply.symbol.precision() );
@@ -233,11 +233,10 @@ ACTION dgoods::burnft(const name& owner,
     _sub_balance(owner, category_name_id, quantity);
 
     // decrease current supply
-    stats2_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
+    stats_table.modify( dgood_stats, same_payer, [&]( auto& s ) {
         s.current_supply -= quantity;
     });
 }
-
 
 ACTION dgoods::transfernft(const name& from,
                            const name& to,
@@ -457,8 +456,8 @@ void dgoods::_changeowner(const name& from, const name& to, const vector<uint64_
     for ( auto const& dgood_id: dgood_ids ) {
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
 
-        stats2_index stats2_table( get_self(), token.category.value );
-        const auto& dgood_stats = stats2_table.get( token.token_name.value, "dgood stats not found" );
+        stats2_index stats_table( get_self(), token.category.value );
+        const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         if ( istransfer ) {
             check( token.owner == from, "must be token owner" );

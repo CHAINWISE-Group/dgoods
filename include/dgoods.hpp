@@ -25,7 +25,7 @@ CONTRACT dgoods: public contract {
         dgoods(name receiver, name code, datastream<const char*> ds)
             : contract(receiver, code, ds) {}
 
-        ACTION setconfig(const symbol_code& sym,
+        ACTION setconfig(const symbol_code& symbol,
                          const string& version);
 
         ACTION create(const name& issuer,
@@ -120,16 +120,19 @@ CONTRACT dgoods: public contract {
 
         // scope is category, then token_name is unique
         TABLE dgoodstats {
-            bool    fungible;
-            bool    burnable;
-            bool    transferable;
-            name    issuer;
-            name    token_name;
+            bool     fungible;
+            bool     burnable;
+            bool     sellable;
+            bool     transferable;
+            name     issuer;
+            name     rev_partner;
+            name     token_name;
             uint64_t category_name_id;
-            dasset  max_supply;
-            uint64_t current_supply;
-            uint64_t issued_supply;
-            string base_uri;
+            asset    max_supply;
+            asset    current_supply;
+            asset    issued_supply;
+            double   rev_split;
+            string   base_uri;
 
             uint64_t primary_key() const { return token_name.value; }
         };
@@ -173,7 +176,7 @@ CONTRACT dgoods: public contract {
             uint64_t category_name_id;
             name category;
             name token_name;
-            dasset amount;
+            asset amount;
 
             uint64_t primary_key() const { return category_name_id; }
         };
