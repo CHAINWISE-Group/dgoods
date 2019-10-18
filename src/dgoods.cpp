@@ -46,6 +46,7 @@ ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
     account_index old_accounts( get_self(), owner.value );
     account2_index new_accounts( get_self(), owner.value );
 
+    // For real old to temp
     config_index config_table( get_self(), get_self().value );
     auto config  = config_table.get();
 
@@ -60,6 +61,19 @@ ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
 
         old++;
     }
+
+    // // For temp to new old
+    // auto temp = new_accounts.begin();
+    // for( int i = 0; i < quantity && temp != new_accounts.end(); i++ ) {
+    //     old_accounts.emplace( get_self(), [&]( accounts& acc) {
+    //         acc.category_name_id = temp->category_name_id;
+    //         acc.category = temp->category;
+    //         acc.token_name = temp->token_name;
+    //         acc.amount = temp->amount;
+    //     });
+
+    //     temp++;
+    // }
 }
 
 ACTION dgoods::clearaccs(const name owner, const uint64_t quantity) {
