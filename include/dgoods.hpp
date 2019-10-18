@@ -26,15 +26,17 @@ CONTRACT dgoods: public contract {
         ACTION setconfig(const symbol_code& sym,
                          const string& version);
 
-
-        ACTION create(name issuer,
-                      name category,
-                      name token_name,
-                      bool fungible,
-                      bool burnable,
-                      bool transferable,
-                      string base_uri,
-                      string max_supply);
+        ACTION create(const name& issuer,
+                      const name& rev_partner,
+                      const name& category,
+                      const name& token_name,
+                      const bool& fungible,
+                      const bool& burnable,
+                      const bool& sellable,
+                      const bool& transferable,
+                      const double& rev_split,
+                      const string& base_uri,
+                      const asset& max_supply);
 
         ACTION issue(name to,
                      name category,
@@ -192,6 +194,7 @@ CONTRACT dgoods: public contract {
 
       private:
 
+        void _checkasset( const asset& amount, const bool& fungible );
         void mint(name to, name issuer, name category, name token_name,
                   uint64_t issued_supply, string relative_uri, string memo);
         void add_balance(name owner, name issuer, name category, name token_name,

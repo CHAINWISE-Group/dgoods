@@ -43,27 +43,27 @@ ACTION dgoods::setconfig(const symbol_code& sym, const string& version) {
     config_table.set( config_singleton, get_self() );
 }
 
-ACTION dgoods::create(name issuer,
-                      name category,
-                      name token_name,
-                      bool fungible,
-                      bool burnable,
-                      bool transferable,
-                      string base_uri,
-                      string max_supply) {
+ACTION dgoods::create(const name& issuer,
+                      const name& rev_partner,
+                      const name& category,
+                      const name& token_name,
+                      const bool& fungible,
+                      const bool& burnable,
+                      const bool& sellable,
+                      const bool& transferable,
+                      const double& rev_split,
+                      const string& base_uri,
+                      const asset& max_supply) {
 
     require_auth( get_self() );
 
+
+    _checkasset( max_supply, fungible );
     // check if issuer account exists
     check( is_account( issuer ), "issuer account does not exist" );
-
-    dasset m_supply;
-    if ( fungible == true ) {
-        m_supply.from_string(max_supply);
-    } else {
-        m_supply.from_string(max_supply, 0);
-        check(m_supply.amount >= 1, "max_supply for nft must be at least 1");
-    }
+    check( is_account( rev_partner), "rev_partner account does not exist" );
+    // check split frac is between 0 and 1
+    check( ( rev_split <= 1.0 ) && (rev_split >= 0.0), "rev_split must be between 0 and 1" );
 
     // get category_name_id
     config_index config_table( get_self(), get_self().value );
@@ -74,29 +74,36 @@ ACTION dgoods::create(name issuer,
 
     category_index category_table( get_self(), get_self().value );
     auto existing_category = category_table.find( category.value );
-    // category hasn't been created before, create it
 
+    // category hasn't been created before, create it
     if ( existing_category == category_table.end() ) {
         category_table.emplace( get_self(), [&]( auto& cat ) {
             cat.category = category;
         });
     }
 
-    stats_index stats_table( get_self(), category.value );
-    auto existing_token = stats_table.find( token_name.value );
-    check( existing_token == stats_table.end(), "Token with category and token_name exists" );
+    asset current_supply = asset( 0, symbol( config_singleton.symbol, max_supply.symbol.precision() ));
+    asset issued_supply = asset( 0, symbol( config_singleton.symbol, max_supply.symbol.precision() ));
+
+
+    stats2_index stats2_table( get_self(), category.value );
+    auto existing_token = stats2_table.find( token_name.value );
+    check( existing_token == stats2_table.end(), "Token with category and token_name exists" );
     // token type hasn't been created, create it
-    stats_table.emplace( get_self(), [&]( auto& stats ) {
+    stats2_table.emplace( get_self(), [&]( auto& stats ) {
         stats.category_name_id = category_name_id;
         stats.issuer = issuer;
+        stats.rev_partner= rev_partner;
         stats.token_name = token_name;
         stats.fungible = fungible;
         stats.burnable = burnable;
+        stats.sellable = sellable;
         stats.transferable = transferable;
-        stats.current_supply = 0;
-        stats.issued_supply = 0;
+        stats.current_supply = current_supply;
+        stats.issued_supply = issued_supply;
+        stats.rev_split = rev_split;
         stats.base_uri = base_uri;
-        stats.max_supply = m_supply;
+        stats.max_supply = max_supply;
     });
 
     // successful creation of token, update category_name_id to reflect
@@ -389,6 +396,22 @@ ACTION dgoods::logissuenft(name issuer,
                            string memo) {
     require_auth( get_self() );
     require_recipient( issuer );
+}
+
+// Private
+void dgoods::_checkasset(const asset& amount, const bool& fungible) {
+    auto sym = amount.symbol;
+    if (fungible) {
+        check( amount.amount > 0, "amount must be positive" );
+    } else {
+        check( sym.precision() == 0, "NFT must be an int, precision of 0" );
+        check( amount.amount >= 1, "NFT amount must be >= 1" );
+    }
+
+    config_index config_table(get_self(), get_self().value);
+    auto config_singleton  = config_table.get();
+    check( config_singleton.symbol.raw() == sym.code().raw(), "Symbol must match symbol in config" );
+    check( amount.is_valid(), "invalid amount" );
 }
 
 // Private
