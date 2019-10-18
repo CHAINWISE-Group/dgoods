@@ -29,6 +29,17 @@ ACTION dgoods::migratestats(const name category) {
     }
 }
 
+ACTION dgoods::clearstats(const name category) {
+    require_auth( get_self() );
+
+    stats_index old_stats( get_self(), category.value );
+
+    auto stat = old_stats.begin();
+    while (stat != old_stats.end()) {
+        stat = old_stats.erase(stat);
+    }
+}
+
 ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
     require_auth( get_self() );
 
@@ -48,6 +59,17 @@ ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
         });
 
         old++;
+    }
+}
+
+ACTION dgoods::clearaccs(const name owner, const uint64_t quantity) {
+    require_auth( get_self() );
+
+    account_index old_accounts( get_self(), owner.value );
+
+    auto account = old_accounts.begin();
+    while (account != old_accounts.end()) {
+        account = old_accounts.erase(account);
     }
 }
 
@@ -570,7 +592,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(migrateaccs)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
+                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(migrateaccs)(clearstats)(clearaccs)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
             }
         }
 

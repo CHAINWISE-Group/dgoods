@@ -82,8 +82,10 @@ CONTRACT dgoods: public contract {
                            string memo);
 
         ACTION migratestats(const name category);
+        ACTION clearstats(const name category);
 
         ACTION migrateaccs(const name owner, const uint64_t quantity);
+        ACTION clearaccs(const name owner, const uint64_t quantity);
 
         TABLE lockednfts {
             uint64_t dgood_id;
