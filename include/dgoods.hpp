@@ -80,12 +80,13 @@ CONTRACT dgoods: public contract {
         // now() gets current time in sec
         // uint32_t 604800 is 1 week in seconds
         TABLE asks {
-            uint64_t dgood_id;
+            uint64_t batch_id;
+            vector<uint64_t> dgood_ids;
             name seller;
             asset amount;
             time_point_sec expiration;
 
-            uint64_t primary_key() const { return dgood_id; }
+            uint64_t primary_key() const { return batch_id; }
             uint64_t get_seller() const { return seller.value; }
         };
 
