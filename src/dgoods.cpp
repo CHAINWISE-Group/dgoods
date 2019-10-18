@@ -28,7 +28,7 @@ ACTION dgoods::migratestats(const name category) {
     }
 }
 
-ACTION dgoods::setconfig(symbol_code sym, string version) {
+ACTION dgoods::setconfig(const symbol_code& sym, const string& version) {
 
     require_auth( get_self() );
     // valid symbol

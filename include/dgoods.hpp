@@ -23,8 +23,8 @@ CONTRACT dgoods: public contract {
         dgoods(name receiver, name code, datastream<const char*> ds)
             : contract(receiver, code, ds) {}
 
-        ACTION setconfig(symbol_code symbol,
-                         string version);
+        ACTION setconfig(const symbol_code& sym,
+                         const string& version);
 
 
         ACTION create(name issuer,
