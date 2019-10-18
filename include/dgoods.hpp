@@ -77,6 +77,8 @@ CONTRACT dgoods: public contract {
                            uint64_t dgood_id,
                            string memo);
 
+        ACTION migratestats(const name category);
+
         TABLE lockednfts {
             uint64_t dgood_id;
 
@@ -126,6 +128,24 @@ CONTRACT dgoods: public contract {
             uint64_t primary_key() const { return token_name.value; }
         };
 
+        TABLE dgoodstats2 {
+            bool     fungible;
+            bool     burnable;
+            bool     sellable;
+            bool     transferable;
+            name     issuer;
+            name     rev_partner;
+            name     token_name;
+            uint64_t category_name_id;
+            asset    max_supply;
+            asset    current_supply;
+            asset    issued_supply;
+            double   rev_split;
+            string   base_uri;
+
+            uint64_t primary_key() const { return token_name.value; }
+        };
+
         // scope is self
         TABLE dgood {
             uint64_t id;
@@ -159,6 +179,8 @@ CONTRACT dgoods: public contract {
         using category_index = multi_index< "categoryinfo"_n, categoryinfo>;
 
         using stats_index = multi_index< "dgoodstats"_n, dgoodstats>;
+
+        using stats2_index = multi_index< "dgoodstats2"_n, dgoodstats2>;
 
         using dgood_index = multi_index< "dgood"_n, dgood,
             indexed_by< "byowner"_n, const_mem_fun< dgood, uint64_t, &dgood::get_owner> > >;

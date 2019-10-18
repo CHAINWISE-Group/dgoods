@@ -1,5 +1,33 @@
 #include <dgoods.hpp>
 
+ACTION dgoods::migratestats(const name category) {
+    require_auth( get_self() );
+
+    stats_index old_stats( get_self(), category.value );
+    stats2_index new_stats( get_self(), category.value );
+
+    config_index config_table(get_self(), get_self().value);
+    auto config  = config_table.get();
+
+    for ( auto old = old_stats.begin(); old != old_stats.end(); old++ ) {
+        new_stats.emplace( get_self(), [&]( dgoodstats2& cat ) {
+            cat.fungible = old->fungible;
+            cat.burnable = old->burnable;
+            cat.sellable = true;
+            cat.transferable = old->transferable;
+            cat.issuer = old->issuer;
+            cat.rev_partner = get_self();
+            cat.token_name = old->token_name;
+            cat.category_name_id = old->category_name_id;
+            cat.max_supply = asset(old->max_supply.amount, symbol(config.symbol, old->max_supply.precision));
+            cat.current_supply = asset(old->current_supply, symbol(config.symbol, old->max_supply.precision));
+            cat.issued_supply = asset(old->issued_supply, symbol(config.symbol, old->max_supply.precision));
+            cat.rev_split = 0.0;
+            cat.base_uri = old->base_uri;
+        });
+    }
+}
+
 ACTION dgoods::setconfig(symbol_code sym, string version) {
 
     require_auth( get_self() );
@@ -438,7 +466,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
+                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
             }
         }
 
