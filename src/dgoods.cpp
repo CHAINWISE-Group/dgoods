@@ -7,6 +7,7 @@ ACTION dgoods::migratestats(const name category) {
     stats_index old_stats( get_self(), category.value );
     stats2_index new_stats( get_self(), category.value );
 
+    // For real old to temp
     config_index config_table(get_self(), get_self().value);
     auto config  = config_table.get();
 
@@ -27,6 +28,25 @@ ACTION dgoods::migratestats(const name category) {
             cat.base_uri = old->base_uri;
         });
     }
+
+    // // For temp to new old
+    // for ( auto temp = new_stats.begin(); temp != new_stats.end(); temp++ ) {
+    //     old_stats.emplace( get_self(), [&]( dgoodstats& cat ) {
+    //         cat.fungible = temp->fungible;
+    //         cat.burnable = temp->burnable;
+    //         cat.sellable = temp->sellable;
+    //         cat.transferable = temp->transferable;
+    //         cat.issuer = temp->issuer;
+    //         cat.rev_partner = temp->rev_partner;
+    //         cat.token_name = temp->token_name;
+    //         cat.category_name_id = temp->category_name_id;
+    //         cat.max_supply = temp->max_supply;
+    //         cat.current_supply = temp->current_supply;
+    //         cat.issued_supply = temp->issued_supply;
+    //         cat.rev_split = temp->rev_split;
+    //         cat.base_uri = temp->base_uri;
+    //     });
+    // }
 }
 
 ACTION dgoods::clearstats(const name category) {
