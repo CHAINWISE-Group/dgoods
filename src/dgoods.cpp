@@ -28,6 +28,28 @@ ACTION dgoods::migratestats(const name category) {
     }
 }
 
+ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
+    require_auth( get_self() );
+
+    account_index old_accounts( get_self(), owner.value );
+    account2_index new_accounts( get_self(), owner.value );
+
+    config_index config_table( get_self(), get_self().value );
+    auto config  = config_table.get();
+
+    auto old = old_accounts.begin();
+    for( int i = 0; i < quantity && old != old_accounts.end(); i++ ) {
+        new_accounts.emplace( get_self(), [&]( accounts2& acc) {
+            acc.category_name_id = old->category_name_id;
+            acc.category = old->category;
+            acc.token_name = old->token_name;
+            acc.amount = asset(old->amount.amount, symbol(config.symbol, old->amount.precision));
+        });
+
+        old++;
+    }
+}
+
 ACTION dgoods::setconfig(const symbol_code& sym, const string& version) {
 
     require_auth( get_self() );
@@ -489,7 +511,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
+                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(migrateaccs)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
             }
         }
 

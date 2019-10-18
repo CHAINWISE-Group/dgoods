@@ -81,6 +81,8 @@ CONTRACT dgoods: public contract {
 
         ACTION migratestats(const name category);
 
+        ACTION migrateaccs(const name owner, const uint64_t quantity);
+
         TABLE lockednfts {
             uint64_t dgood_id;
 
@@ -174,9 +176,20 @@ CONTRACT dgoods: public contract {
             uint64_t primary_key() const { return category_name_id; }
         };
 
+        TABLE accounts2 {
+            uint64_t category_name_id;
+            name category;
+            name token_name;
+            asset amount;
+
+            uint64_t primary_key() const { return category_name_id; }
+        };
+
         using config_index = singleton< "tokenconfigs"_n, tokenconfigs >;
 
         using account_index = multi_index< "accounts"_n, accounts >;
+
+        using account2_index = multi_index< "accounts2"_n, accounts2 >;
 
         using category_index = multi_index< "categoryinfo"_n, categoryinfo>;
 
