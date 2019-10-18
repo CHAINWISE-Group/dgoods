@@ -77,6 +77,12 @@ CONTRACT dgoods: public contract {
                            uint64_t dgood_id,
                            string memo);
 
+        TABLE lockednfts {
+            uint64_t dgood_id;
+
+            uint64_t primary_key() const { return dgood_id; }
+        };
+
         // now() gets current time in sec
         // uint32_t 604800 is 1 week in seconds
         TABLE asks {
@@ -159,6 +165,8 @@ CONTRACT dgoods: public contract {
 
         using ask_index = multi_index< "asks"_n, asks,
             indexed_by< "byseller"_n, const_mem_fun< asks, uint64_t, &asks::get_seller> > >;
+
+        using lock_index = multi_index< "lockednfts"_n, lockednfts>;
 
       private:
 
