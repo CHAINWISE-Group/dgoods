@@ -8,11 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "utility.hpp"
 #include "dasset.hpp"
 
 using namespace std;
 using namespace eosio;
 using namespace dgoods_asset;
+using namespace utility;
 
 CONTRACT dgoods: public contract {
     public:
@@ -38,42 +40,42 @@ CONTRACT dgoods: public contract {
                       const string& base_uri,
                       const asset& max_supply);
 
-        ACTION issue(name to,
-                     name category,
-                     name token_name,
-                     string quantity,
-                     string relative_uri,
-                     string memo);
+        ACTION issue(const name& to,
+                     const name& category,
+                     const name& token_name,
+                     const asset& quantity,
+                     const string& relative_uri,
+                     const string& memo);
 
-        ACTION burnnft(name owner,
-                       vector<uint64_t> dgood_ids);
+        ACTION burnnft(const name& owner,
+                       const vector<uint64_t>& dgood_ids);
 
-        ACTION burnft(name owner,
-                      uint64_t category_name_id,
-                      string quantity);
+        ACTION burnft(const name& owner,
+                      const uint64_t& category_name_id,
+                      const asset& quantity);
 
-        ACTION buynft(name from, name to, asset quantity, string memo);
+        void buynft(const name& from, const name& to, const asset& quantity, const string& memo);
 
-        ACTION transfernft(name from,
-                           name to,
-                           vector<uint64_t> dgood_ids,
-                           string memo);
+        ACTION transfernft(const name& from,
+                           const name& to,
+                           const vector<uint64_t>& dgood_ids,
+                           const string& memo);
 
-        ACTION transferft(name from,
-                          name to,
-                          name category,
-                          name token_name,
-                          string quantity,
-                          string memo);
+        ACTION transferft(const name& from,
+                          const name& to,
+                          const name& category,
+                          const name& token_name,
+                          const asset& quantity,
+                          const string& memo);
 
-        ACTION listsalenft(name seller,
-                           uint64_t dgood_id,
-                           asset net_sale_amount);
+        ACTION listsalenft(const name& seller,
+                           const vector<uint64_t>& dgood_ids,
+                           const asset& net_sale_amount);
 
-        ACTION closesalenft(name seller,
-                            uint64_t dgood_id);
+        ACTION closesalenft(const name& seller,
+                            const uint64_t& batch_id);
 
-        ACTION logcall(uint64_t dgood_id);
+        ACTION logcall(const uint64_t& dgood_id);
 
         ACTION logissuenft(name issuer,
                            uint64_t dgood_id,
@@ -206,11 +208,12 @@ CONTRACT dgoods: public contract {
         using lock_index = multi_index< "lockednfts"_n, lockednfts>;
 
       private:
-
+        map<name, asset> _calcfees(vector<uint64_t> dgood_ids, asset ask_amount, name seller);
+        void _changeowner( const name& from, const name& to, const vector<uint64_t>& dgood_ids, const string& memo, const bool& istransfer);
         void _checkasset( const asset& amount, const bool& fungible );
-        void mint(name to, name issuer, name category, name token_name,
-                  uint64_t issued_supply, string relative_uri, string memo);
-        void add_balance(name owner, name issuer, name category, name token_name,
-                         uint64_t category_name_id, dasset quantity);
-        void sub_balance(name owner, uint64_t category_name_id, dasset quantity);
+        void _mint(const name& to, const name& issuer, const name& category, const name& token_name,
+                  const asset& issued_supply, const string& relative_uri, const string memo);
+        void _add_balance(const name& owner, const name& issuer, const name& category, const name& token_name,
+                         const uint64_t& category_name_id, const asset& quantity);
+        void _sub_balance(const name& owner, const uint64_t& category_name_id, const asset& quantity);
 };
