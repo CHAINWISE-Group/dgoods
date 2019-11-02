@@ -9,11 +9,9 @@
 #include <vector>
 
 #include "utility.hpp"
-#include "dasset.hpp"
 
 using namespace std;
 using namespace eosio;
-using namespace dgoods_asset;
 using namespace utility;
 
 CONTRACT dgoods: public contract {
@@ -81,12 +79,6 @@ CONTRACT dgoods: public contract {
                            uint64_t dgood_id,
                            string memo);
 
-        ACTION migratestats(const name category);
-        ACTION clearstats(const name category);
-
-        ACTION migrateaccs(const name owner, const uint64_t quantity);
-        ACTION clearaccs(const name owner, const uint64_t quantity);
-
         TABLE lockednfts {
             uint64_t dgood_id;
 
@@ -122,21 +114,6 @@ CONTRACT dgoods: public contract {
 
         // scope is category, then token_name is unique
         TABLE dgoodstats {
-            bool     fungible;
-            bool     burnable;
-            bool     transferable;
-            name     issuer;
-            name     token_name;
-            uint64_t category_name_id;
-            dasset   max_supply;
-            uint64_t current_supply;
-            uint64_t issued_supply;
-            string base_uri;
-
-            uint64_t primary_key() const { return token_name.value; }
-        };
-
-        TABLE dgoodstats2 {
             bool     fungible;
             bool     burnable;
             bool     sellable;
@@ -175,15 +152,6 @@ CONTRACT dgoods: public contract {
             uint64_t category_name_id;
             name category;
             name token_name;
-            dasset amount;
-
-            uint64_t primary_key() const { return category_name_id; }
-        };
-
-        TABLE accounts2 {
-            uint64_t category_name_id;
-            name category;
-            name token_name;
             asset amount;
 
             uint64_t primary_key() const { return category_name_id; }
@@ -193,13 +161,9 @@ CONTRACT dgoods: public contract {
 
         using account_index = multi_index< "accounts"_n, accounts >;
 
-        using account2_index = multi_index< "accounts2"_n, accounts2 >;
-
         using category_index = multi_index< "categoryinfo"_n, categoryinfo>;
 
         using stats_index = multi_index< "dgoodstats"_n, dgoodstats>;
-
-        using stats2_index = multi_index< "dgoodstats2"_n, dgoodstats2>;
 
         using dgood_index = multi_index< "dgood"_n, dgood,
             indexed_by< "byowner"_n, const_mem_fun< dgood, uint64_t, &dgood::get_owner> > >;

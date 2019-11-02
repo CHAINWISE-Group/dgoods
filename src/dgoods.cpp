@@ -1,112 +1,6 @@
 #include <dgoods.hpp>
 #include <math.h>
 
-ACTION dgoods::migratestats(const name category) {
-    require_auth( get_self() );
-
-    stats_index old_stats( get_self(), category.value );
-    stats2_index new_stats( get_self(), category.value );
-
-    // For real old to temp
-    config_index config_table(get_self(), get_self().value);
-    auto config  = config_table.get();
-
-    for ( auto old = old_stats.begin(); old != old_stats.end(); old++ ) {
-        new_stats.emplace( get_self(), [&]( dgoodstats2& cat ) {
-            cat.fungible = old->fungible;
-            cat.burnable = old->burnable;
-            cat.sellable = true;
-            cat.transferable = old->transferable;
-            cat.issuer = old->issuer;
-            cat.rev_partner = get_self();
-            cat.token_name = old->token_name;
-            cat.category_name_id = old->category_name_id;
-            cat.max_supply = asset(old->max_supply.amount, symbol(config.symbol, old->max_supply.precision));
-            cat.current_supply = asset(old->current_supply, symbol(config.symbol, old->max_supply.precision));
-            cat.issued_supply = asset(old->issued_supply, symbol(config.symbol, old->max_supply.precision));
-            cat.rev_split = 0.0;
-            cat.base_uri = old->base_uri;
-        });
-    }
-
-    // // For temp to new old
-    // for ( auto temp = new_stats.begin(); temp != new_stats.end(); temp++ ) {
-    //     old_stats.emplace( get_self(), [&]( dgoodstats& cat ) {
-    //         cat.fungible = temp->fungible;
-    //         cat.burnable = temp->burnable;
-    //         cat.sellable = temp->sellable;
-    //         cat.transferable = temp->transferable;
-    //         cat.issuer = temp->issuer;
-    //         cat.rev_partner = temp->rev_partner;
-    //         cat.token_name = temp->token_name;
-    //         cat.category_name_id = temp->category_name_id;
-    //         cat.max_supply = temp->max_supply;
-    //         cat.current_supply = temp->current_supply;
-    //         cat.issued_supply = temp->issued_supply;
-    //         cat.rev_split = temp->rev_split;
-    //         cat.base_uri = temp->base_uri;
-    //     });
-    // }
-}
-
-ACTION dgoods::clearstats(const name category) {
-    require_auth( get_self() );
-
-    stats_index old_stats( get_self(), category.value );
-
-    auto stat = old_stats.begin();
-    while (stat != old_stats.end()) {
-        stat = old_stats.erase(stat);
-    }
-}
-
-ACTION dgoods::migrateaccs(const name owner, const uint64_t quantity) {
-    require_auth( get_self() );
-
-    account_index old_accounts( get_self(), owner.value );
-    account2_index new_accounts( get_self(), owner.value );
-
-    // For real old to temp
-    config_index config_table( get_self(), get_self().value );
-    auto config  = config_table.get();
-
-    auto old = old_accounts.begin();
-    for( int i = 0; i < quantity && old != old_accounts.end(); i++ ) {
-        new_accounts.emplace( get_self(), [&]( accounts2& acc) {
-            acc.category_name_id = old->category_name_id;
-            acc.category = old->category;
-            acc.token_name = old->token_name;
-            acc.amount = asset(old->amount.amount, symbol(config.symbol, old->amount.precision));
-        });
-
-        old++;
-    }
-
-    // // For temp to new old
-    // auto temp = new_accounts.begin();
-    // for( int i = 0; i < quantity && temp != new_accounts.end(); i++ ) {
-    //     old_accounts.emplace( get_self(), [&]( accounts& acc) {
-    //         acc.category_name_id = temp->category_name_id;
-    //         acc.category = temp->category;
-    //         acc.token_name = temp->token_name;
-    //         acc.amount = temp->amount;
-    //     });
-
-    //     temp++;
-    // }
-}
-
-ACTION dgoods::clearaccs(const name owner, const uint64_t quantity) {
-    require_auth( get_self() );
-
-    account_index old_accounts( get_self(), owner.value );
-
-    auto account = old_accounts.begin();
-    while (account != old_accounts.end()) {
-        account = old_accounts.erase(account);
-    }
-}
-
 ACTION dgoods::setconfig(const symbol_code& sym, const string& version) {
 
     require_auth( get_self() );
@@ -165,7 +59,7 @@ ACTION dgoods::create(const name& issuer,
     asset issued_supply = asset( 0, symbol( config_singleton.symbol, max_supply.symbol.precision() ));
 
 
-    stats2_index stats_table( get_self(), category.value );
+    stats_index stats_table( get_self(), category.value );
     auto existing_token = stats_table.find( token_name.value );
     check( existing_token == stats_table.end(), "Token with category and token_name exists" );
     // token type hasn't been created, create it
@@ -202,7 +96,7 @@ ACTION dgoods::issue(const name& to,
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     // dgoodstats table
-    stats2_index stats_table( get_self(), category.value );
+    stats_index stats_table( get_self(), category.value );
     const auto& dgood_stats = stats_table.get( token_name.value,
                                                "Token with category and token_name does not exist" );
 
@@ -247,7 +141,7 @@ ACTION dgoods::burnnft(const name& owner,
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
         check( token.owner == owner, "must be token owner" );
 
-        stats2_index stats_table( get_self(), token.category.value );
+        stats_index stats_table( get_self(), token.category.value );
         const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         check( dgood_stats.burnable == true, "Not burnable");
@@ -279,7 +173,7 @@ ACTION dgoods::burnft(const name& owner,
     account_index from_account( get_self(), owner.value );
     const auto& acct = from_account.get( category_name_id, "token does not exist in account" );
 
-    stats2_index stats_table( get_self(), acct.category.value );
+    stats_index stats_table( get_self(), acct.category.value );
     const auto& dgood_stats = stats_table.get( acct.token_name.value, "dgood stats not found" );
 
     _checkasset( quantity, true );
@@ -333,8 +227,8 @@ ACTION dgoods::transferft(const name& from,
     require_recipient( from );
     require_recipient( to );
 
-    stats2_index stats2_table( get_self(), category.value );
-    const auto& dgood_stats = stats2_table.get( token_name.value, "dgood stats not found" );
+    stats_index stats_table( get_self(), category.value );
+    const auto& dgood_stats = stats_table.get( token_name.value, "dgood stats not found" );
     check( dgood_stats.transferable == true, "not transferable");
     check( dgood_stats.fungible == true, "Must be fungible token");
 
@@ -358,7 +252,7 @@ ACTION dgoods::listsalenft(const name& seller,
     for ( auto const& dgood_id: dgood_ids ) {
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
 
-        stats2_index stats_table( get_self(), token.category.value );
+        stats_index stats_table( get_self(), token.category.value );
         const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         check( dgood_stats.sellable == true, "not sellable");
@@ -478,7 +372,7 @@ map<name, asset> dgoods::_calcfees(vector<uint64_t> dgood_ids, asset ask_amount,
     for ( auto const& dgood_id: dgood_ids ) {
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
 
-        stats2_index stats_table( get_self(), token.category.value );
+        stats_index stats_table( get_self(), token.category.value );
         const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         name rev_partner = dgood_stats.rev_partner;
@@ -512,7 +406,7 @@ void dgoods::_changeowner(const name& from, const name& to, const vector<uint64_
     for ( auto const& dgood_id: dgood_ids ) {
         const auto& token = dgood_table.get( dgood_id, "token does not exist" );
 
-        stats2_index stats_table( get_self(), token.category.value );
+        stats_index stats_table( get_self(), token.category.value );
         const auto& dgood_stats = stats_table.get( token.token_name.value, "dgood stats not found" );
 
         if ( istransfer ) {
@@ -588,7 +482,7 @@ void dgoods::_mint(const name& to,
 // Private
 void dgoods::_add_balance(const name& owner, const name& ram_payer, const name& category, const name& token_name,
                          const uint64_t& category_name_id, const asset& quantity) {
-    account2_index to_account( get_self(), owner.value );
+    account_index to_account( get_self(), owner.value );
     auto acct = to_account.find( category_name_id );
     if ( acct == to_account.end() ) {
         to_account.emplace( ram_payer, [&]( auto& a ) {
@@ -607,7 +501,7 @@ void dgoods::_add_balance(const name& owner, const name& ram_payer, const name& 
 // Private
 void dgoods::_sub_balance(const name& owner, const uint64_t& category_name_id, const asset& quantity) {
 
-    account2_index from_account( get_self(), owner.value );
+    account_index from_account( get_self(), owner.value );
     const auto& acct = from_account.get( category_name_id, "token does not exist in account" );
     check( acct.amount.amount >= quantity.amount, "quantity is more than account balance");
 
@@ -626,7 +520,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (migratestats)(migrateaccs)(clearstats)(clearaccs)(setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
+                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
             }
         }
 
