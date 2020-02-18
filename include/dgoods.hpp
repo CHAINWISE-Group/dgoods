@@ -77,6 +77,7 @@ CONTRACT dgoods: public contract {
 
         ACTION logissuenft(name issuer,
                            uint64_t dgood_id,
+                           name owner,
                            string memo);
 
         TABLE lockednfts {

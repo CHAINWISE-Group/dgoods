@@ -359,6 +359,7 @@ ACTION dgoods::logcall(const uint64_t& dgood_id) {
 // method to notify issuer of the new nft id
 ACTION dgoods::logissuenft(name issuer,
                            uint64_t dgood_id,
+                           name owner,
                            string memo) {
     require_auth( get_self() );
     require_recipient( issuer );
@@ -476,7 +477,7 @@ void dgoods::_mint(const name& to,
         });
     }
     SEND_INLINE_ACTION( *this, logcall, { { get_self(), "active"_n } }, { dgood_id } );
-    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id, memo } );
+    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id, to, memo } );
 }
 
 // Private
