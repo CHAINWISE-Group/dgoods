@@ -75,11 +75,6 @@ CONTRACT dgoods: public contract {
 
         ACTION logcall(const uint64_t& dgood_id);
 
-        ACTION logissuenft(name issuer,
-                           uint64_t dgood_id,
-                           name owner,
-                           string memo);
-
         TABLE lockednfts {
             uint64_t dgood_id;
 
@@ -179,7 +174,7 @@ CONTRACT dgoods: public contract {
         void _changeowner( const name& from, const name& to, const vector<uint64_t>& dgood_ids, const string& memo, const bool& istransfer);
         void _checkasset( const asset& amount, const bool& fungible );
         void _mint(const name& to, const name& issuer, const name& category, const name& token_name,
-                  const asset& issued_supply, const string& relative_uri, const string memo);
+                  const asset& issued_supply, const string& relative_uri);
         void _add_balance(const name& owner, const name& issuer, const name& category, const name& token_name,
                          const uint64_t& category_name_id, const asset& quantity);
         void _sub_balance(const name& owner, const uint64_t& category_name_id, const asset& quantity);
