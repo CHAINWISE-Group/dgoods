@@ -115,7 +115,7 @@ ACTION dgoods::issue(const name& to,
         asset one_token = asset( 1, dgood_stats.max_supply.symbol);
         for ( uint64_t i = 1; i <= quantity.amount; i++ ) {
             _mint(to, dgood_stats.issuer, category, token_name,
-                  issued_supply, relative_uri, memo);
+                  issued_supply, relative_uri);
             // used to keep track of serial number when minting multiple
             issued_supply += one_token;
         }
@@ -356,15 +356,6 @@ ACTION dgoods::logcall(const uint64_t& dgood_id) {
     require_auth( get_self() );
 }
 
-// method to notify issuer of the new nft id
-ACTION dgoods::logissuenft(name issuer,
-                           uint64_t dgood_id,
-                           name owner,
-                           string memo) {
-    require_auth( get_self() );
-    require_recipient( issuer );
-}
-
 // Private
 map<name, asset> dgoods::_calcfees(vector<uint64_t> dgood_ids, asset ask_amount, name seller) {
     map<name, asset> fee_map;
@@ -453,8 +444,7 @@ void dgoods::_mint(const name& to,
                    const name& category,
                    const name& token_name,
                    const asset& issued_supply,
-                   const string& relative_uri,
-                   const string memo) {
+                   const string& relative_uri) {
 
     dgood_index dgood_table( get_self(), get_self().value);
     auto dgood_id = dgood_table.available_primary_key();
@@ -477,7 +467,6 @@ void dgoods::_mint(const name& to,
         });
     }
     SEND_INLINE_ACTION( *this, logcall, { { get_self(), "active"_n } }, { dgood_id } );
-    SEND_INLINE_ACTION( *this, logissuenft, { { get_self(), "active"_n } }, { issuer, dgood_id, to, memo } );
 }
 
 // Private
@@ -521,7 +510,7 @@ extern "C" {
 
         if ( code == self ) {
             switch( action ) {
-                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall)(logissuenft) )
+                EOSIO_DISPATCH_HELPER( dgoods, (setconfig)(create)(issue)(burnnft)(burnft)(transfernft)(transferft)(listsalenft)(closesalenft)(logcall) )
             }
         }
 
@@ -532,3 +521,4 @@ extern "C" {
         }
     }
 }
+
